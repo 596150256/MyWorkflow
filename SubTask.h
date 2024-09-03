@@ -2,7 +2,7 @@
 #define _SUBTASK_H_
 
 #include <stddef.h>
-//
+
 class parallelTask;
 
 class subTask
