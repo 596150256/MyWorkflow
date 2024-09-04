@@ -1,4 +1,4 @@
-CC = g++
+CC = gcc
 
 CFLAGS = -c -Wall
 
@@ -11,11 +11,11 @@ all: $(EXECUTABLE)
 $(EXECUTABLE): SubTask.o test.o
 	$(CC) $(LDFLAGS) SubTask.o test.o -o $@
 
-SubTask.o: SubTask.cpp SubTask.h
-	$(CC) $(CFLAGS) SubTask.cpp
+SubTask.o: SubTask.cc SubTask.h
+	$(CC) $(CFLAGS) SubTask.cc
 
-test.o: test.cpp
-	$(CC) $(CFLAGS) test.cpp
+test.o: test.cc
+	$(CC) $(CFLAGS) test.cc
 
 clean:
 	del /Q /F *.o $(EXECUTABLE)

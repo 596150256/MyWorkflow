@@ -1,6 +1,4 @@
 #include "SubTask.h"
-#include <iostream>
-using namespace std;
 
 void subTask::subtask_done()
 {
@@ -30,9 +28,6 @@ void subTask::subtask_done()
 
 void parallelTask::dispatch()
 {
-    cout << "parallel..." << endl;
-    cout << this->subtasks_nr << endl;
-
     subTask** end = this->subtasks + this->subtasks_nr;
     subTask** p = this->subtasks;
 
@@ -51,6 +46,5 @@ void parallelTask::dispatch()
 
 subTask* parallelTask::done()
 {
-    cout << "Paralleltask complete." << endl;
     return NULL;
 }
