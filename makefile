@@ -18,4 +18,4 @@ test.o: test.cc
 	$(CC) $(CFLAGS) test.cc
 
 clean:
-	del /Q /F *.o $(EXECUTABLE)
+	rm -f *.o $(EXECUTABLE)
