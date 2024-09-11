@@ -1,9 +1,9 @@
 #include "SubTask.h"
 
-void subTask::subtask_done()
+void SubTask::subtask_done()
 {
-    subTask* cur = this;
-    parallelTask* parent;
+    SubTask* cur = this;
+    ParallelTask* parent;
 
     while (1)
     {
@@ -26,10 +26,10 @@ void subTask::subtask_done()
     }
 }
 
-void parallelTask::dispatch()
+void ParallelTask::dispatch()
 {
-    subTask** end = this->subtasks + this->subtasks_nr;
-    subTask** p = this->subtasks;
+    SubTask** end = this->subtasks + this->subtasks_nr;
+    SubTask** p = this->subtasks;
 
     this->nleft = this->subtasks_nr;
     if (this->nleft != 0)
@@ -37,14 +37,9 @@ void parallelTask::dispatch()
         do
         {
             (*p)->parent = this;
-            (*p)->dispatch();            
+            (*p)->dispatch();
         } while (++p != end);
     }
     else
         this->subtask_done();
-}
-
-subTask* parallelTask::done()
-{
-    return NULL;
 }

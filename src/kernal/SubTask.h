@@ -3,56 +3,61 @@
 
 #include <stddef.h>
 
-class parallelTask;
+class ParallelTask;
 
-class subTask
+class SubTask
 {
 public:
     virtual void dispatch() = 0;
 
 private:
-    virtual subTask* done() = 0;
+    virtual SubTask* done() = 0;
 
 protected:
     void subtask_done();
 
+public:
+    void *get_pointer() const { return this->pointer; }
+    void set_pointer(void *pointer) {this->pointer = pointer; }
+
 private:
-    parallelTask* parent;
+    ParallelTask* parent;
+    void *pointer;
 
 public:
-    subTask()
+    SubTask()
     {
         this->parent = NULL;
     }
 
-    virtual ~subTask() {}
-    friend class parallelTask;
+    virtual ~SubTask() {}
+    friend class ParallelTask;
 };
 
-class parallelTask : public subTask
+class ParallelTask : public SubTask
 {
 public:
     virtual void dispatch();
 
 private:
-    virtual subTask* done();
+    virtual SubTask* done();
 
 protected:
-    subTask** subtasks;
+    SubTask** subtasks;
     size_t subtasks_nr;
 
 private:
     size_t nleft;
 
 public:
-    parallelTask(subTask** subtasks, size_t n)
+    ParallelTask(SubTask** subtasks, size_t n)
     {
         this->subtasks = subtasks;
         this->subtasks_nr = n;
     }
 
-    virtual ~parallelTask() {}
-    friend class subTask;
+    virtual ~ParallelTask() {}
+    friend class SubTask;
 };
 
 #endif
