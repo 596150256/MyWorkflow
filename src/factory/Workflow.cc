@@ -148,3 +148,88 @@ SubTask *SeriesWork::pop_task()
     return task;
 }
 
+ParallelWork::ParallelWork(parallel_callback_t&& cb) :
+    ParallelTask(new SubTask *[2 * 4], 0),
+    callback(std::move(cb))
+{
+    this->buf_size = 4;
+    this->all_series = (SeriesWork **)&this->subtasks[this->buf_size];
+    this->context = NULL;
+}
+
+ParallelWork::ParallelWork(SeriesWork *const all_series[], size_t n,
+                           parallel_callback_t&& cb) :
+    ParallelTask(new SubTask *[2 * (n > 4 ? n : 4)], n),
+    callback(std::move(cb))
+{
+    size_t i;
+
+    this->buf_size = (n > 4 ? n : 4);
+    this->all_series = (SeriesWork **)&this->subtasks[this->buf_size];
+    for (i = 0; i < n; ++i)
+    {
+        assert(!all_series[i]->in_parallel);
+        all_series[i]->in_parallel = this;
+        this->all_series[i] = all_series[i];
+        this->subtasks[i] = all_series[i]->first;
+    }
+
+    this->context = NULL;
+}
+
+void ParallelWork::expand_buf()
+{
+    SubTask **buf;
+    size_t size;
+
+    this->buf_size *= 2;
+    buf = new SubTask *[2 * this->buf_size];
+    size = this->subtasks_nr * sizeof (void *);
+    memcpy(buf, this->subtasks, size);
+    memcpy(buf + this->buf_size, this->all_series, size);
+
+    delete []this->subtasks;
+    this->subtasks = buf;
+    this->all_series = (SeriesWork **)&buf[this->buf_size];
+}
+
+void ParallelWork::add_series(SeriesWork *series)
+{
+    if (this->subtasks_nr == this->buf_size)
+        this->expand_buf();
+
+    assert(!series->in_parallel);
+    series->in_parallel = this;
+    this->all_series[this->subtasks_nr] = series;
+    this->subtasks[this->subtasks_nr] = series->first;
+    this->subtasks_nr++;
+}
+
+SubTask *ParallelWork::done()
+{
+    SeriesWork *series = series_of(this);
+    size_t i;
+
+    if (this->callback)
+        this->callback(this);
+
+    for (i = 0; i < this->subtasks_nr; ++i)
+        delete this->all_series[i];
+
+    this->subtasks_nr = 0;
+    delete this;
+    return series->pop();
+}
+
+ParallelWork::~ParallelWork()
+{
+    size_t i;
+
+    for (i = 0; i < this->subtasks_nr; i++)
+    {
+        this->all_series[i]->in_parallel = NULL;
+        this->all_series[i]->dismiss_recursive();
+    }
+
+    delete []this->subtasks;
+}

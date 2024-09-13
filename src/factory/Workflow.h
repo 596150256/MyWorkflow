@@ -124,13 +124,13 @@ private:
     void expand_queue();
 
 private:
+    SubTask *buf[4];
     SubTask *first;
     SubTask *last;
     bool canceled;
     bool finished;
     const ParallelTask *in_parallel;
 
-    SubTask *buf[4];
     SubTask **queue;
     int queue_size;
     int front;
@@ -149,7 +149,7 @@ static inline SeriesWork *series_of(const SubTask *task)
     return (SeriesWork *)task->get_pointer();
 }
 
-static inline SeriesWork& operator *(const SubTask& task)
+static inline SeriesWork& operator * (const SubTask& task)
 {
     return *series_of(&task);
 }
@@ -193,10 +193,103 @@ Workflow::start_series_work(SubTask *first, SubTask *last,
 
 class ParallelWork : public ParallelTask
 {
-    
+public:
+    void start()
+    {
+        assert(!series_of(this));
+        Workflow::start_series_work(this, nullptr);
+    }
+
+    void dismiss()
+    {
+        assert(!series_of(this));
+        delete this;
+    }
+
+public:
+    void add_series(SeriesWork *series);
+
+public:
+    void *get_context() const { return this->context; }
+    void set_context(void *context) { this->context = context; }
+
+public:
+    SeriesWork *series_at(size_t index)
+    {
+        if (index < this->subtasks_nr)
+            return this->all_series[index];
+        else
+            return NULL;
+    }
+
+    const SeriesWork *series_at(size_t index) const
+    {
+        if (index < this->subtasks_nr)
+            return this->all_series[index];
+        else
+            return NULL;
+    }
+
+    SeriesWork& operator [] (size_t index)
+    {
+        return *this->series_at(index);
+    }
+
+    const SeriesWork& operator [] (size_t index) const
+    {
+        return *this->series_at(index);
+    }
+
+    size_t size() const { return this->subtasks_nr; }
+
+public:
+    void set_callback(parallel_callback_t callback)
+    {
+        this->callback = std::move(callback);
+    }
+
+protected:
+    virtual SubTask *done();
+
+protected:
+    void *context;
+    parallel_callback_t callback;
+
+private:
+    void expand_buf();
+
+private:
+    size_t buf_size;
+    SeriesWork **all_series;
+
+protected:
+    ParallelWork(parallel_callback_t&& callback);
+    ParallelWork(SeriesWork *const all_series[], size_t n,
+                 parallel_callback_t&& callback);
+    virtual ~ParallelWork();
+    friend class Workflow;
 };
 
+inline ParallelWork *
+Workflow::create_parallel_work(parallel_callback_t callback)
+{
+    return new ParallelWork(std::move(callback));
+}
 
+inline ParallelWork *
+Workflow::create_parallel_work(SeriesWork *const all_series[], size_t n,
+                               parallel_callback_t callback)
+{
+    return new ParallelWork(all_series, n, std::move(callback));
+}   
+
+inline void
+Workflow::start_parallel_work(SeriesWork *const all_series[], size_t n,
+                              parallel_callback_t callback)
+{
+    ParallelWork *p = new ParallelWork(all_series, n, std::move(callback));
+    Workflow::start_series_work(p, nullptr);
+}                            
 
 
 
