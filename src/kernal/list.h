@@ -122,9 +122,9 @@ static inline void list_splice_init(struct list_head *list,
 #define list_for_each_prev(pos, head) \
         for ((pos) = (head)->prev; (pos) != (head); pos = pos->prev)
 
-#define list_for_each_safe(pos, head) \
-        for ((pos) = (head)->next, n = (pos)->next; (pos) != (head); \
-             pos = n, n = pos->next;)
+#define list_for_each_safe(pos, n, head) \
+        for ((pos) = (head)->next, (n) = (pos)->next; (pos) != (head); \
+             (pos) = (n), (n) = (pos)->next)
 
 #define list_for_each_entry(pos, head, member) \
         for (pos = list_entry((head)->next, typeof (*pos), member); \
