@@ -291,21 +291,4 @@ Workflow::start_parallel_work(SeriesWork *const all_series[], size_t n,
     Workflow::start_series_work(p, nullptr);
 }                            
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #endif

@@ -281,7 +281,7 @@ struct rb_node *rb_first(struct rb_root *root)
     struct rb_node *n;
 
     n = root->rb_node;
-    if( !n)
+    if(!n)
         return (struct rb_node *)0;
 
     while (n->rb_left)

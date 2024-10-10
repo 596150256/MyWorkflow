@@ -25,6 +25,12 @@ enum
 
 //scheme://[userinfo@]host[:port][/path][?query][#fragment]
 //0-6 (scheme, userinfo, host, port, path, query, fragment)
+// FRAGMENT：#
+// PATH：/
+// HOST: :
+// QUERY: ?
+// USERINFO: @
+
 static constexpr unsigned char valid_char[4][256] = {
 	{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -266,6 +272,7 @@ int URIParser::parse(const char *str, ParsedURI& uri)
     }
 
     bool skip_path = false;
+
     if (start_idx[URI_PATH] == 0)
     {
         for (; ; i++)

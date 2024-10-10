@@ -446,7 +446,7 @@ static int __parse_chunk_data(const char *ptr, size_t len,
     for (i = 0; i < min; ++i)
     {
         chunk_line[i] = ptr[i];
-        if (chunk_line[i] == 'r')
+        if (chunk_line[i] == '\r')
         {
             if (i == len - 1)
                 return 0;
