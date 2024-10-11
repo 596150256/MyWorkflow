@@ -145,6 +145,17 @@ static void __thrdpool_exit_routine(void *context)
     pthread_exit(NULL);
 }
 
+void thrdpool_exit(thrdpool_t *pool)
+{
+    if (thrdpool_in_pool(pool))
+        __thrdpool_exit_routine(pool);
+}
+
+inline int thrdpool_in_pool(thrdpool_t *pool)
+{
+    return pthread_getspecific(pool->key) == pool;
+}
+
 static void __thrdpool_terminate(int in_pool, thrdpool_t *pool)
 {
     pthread_cond_t term = PTHREAD_COND_INITIALIZER;
@@ -165,12 +176,6 @@ static void __thrdpool_terminate(int in_pool, thrdpool_t *pool)
     pthread_mutex_unlock(&pool->mutex);
     if (!pthread_equal(pool->tid, __zero_tid))
         pthread_join(pool->tid, NULL);
-}
-
-void thrdpool_exit(thrdpool_t *pool)
-{
-    if (thrdpool_in_pool(pool))
-        __thrdpool_exit_routine(pool);
 }
 
 void thrdpool_destroy(void (*pending)(const struct thrdpool_task *),
@@ -198,11 +203,6 @@ void thrdpool_destroy(void (*pending)(const struct thrdpool_task *),
     if (!in_pool)
         free(pool);
 }   
-
-inline int thrdpool_in_pool(thrdpool_t *pool)
-{
-    return pthread_getspecific(pool->key) == pool;
-}
 
 int thrdpool_increase(thrdpool_t *pool)
 {
