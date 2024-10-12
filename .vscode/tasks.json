@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "my build",
+            "type": "shell",
+            "command": "F:/mingw64/bin/gcc",
+            "args": [
+                "-g",
+                "{$file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "my compilor"
+        }
+    ]
+}
